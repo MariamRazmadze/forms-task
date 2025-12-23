@@ -1,9 +1,13 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { z } from "zod";
 
-type FormFelds = {
-  email: string;
-  password: string;
-};
+const schema = z.object({
+  email: z.email(),
+  password: z.string().min(8),
+});
+
+type FormFields = z.infer<typeof schema>;
 
 export default function HookForm() {
   const {
@@ -11,13 +15,14 @@ export default function HookForm() {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<FormFelds>({
+  } = useForm<FormFields>({
     defaultValues: {
       email: "test@email.com",
     },
+    resolver: zodResolver(schema),
   });
 
-  const onSubmit: SubmitHandler<FormFelds> = async (data) => {
+  const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       throw new Error();
@@ -39,13 +44,7 @@ export default function HookForm() {
             Email:
           </label>
           <input
-            {...register("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                message: "Please enter a valid email address",
-              },
-            })}
+            {...register("email")}
             type="text"
             id="email"
             placeholder="example@gmail.com"
@@ -66,13 +65,7 @@ export default function HookForm() {
             Password:
           </label>
           <input
-            {...register("password", {
-              required: "Password is required",
-              minLength: {
-                value: 8,
-                message: "Password must be at least 8 characters",
-              },
-            })}
+            {...register("password")}
             type="password"
             id="password"
             className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
