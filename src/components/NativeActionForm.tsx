@@ -1,4 +1,4 @@
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 
 type FormState = {
   success?: boolean;
@@ -24,7 +24,8 @@ async function submitForm(
   if (!username || username.length < 3) {
     errors.username = "Username must be at least 3 characters";
   }
-  if (!email || !email.includes("@")) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
     errors.email = "Please enter a valid email";
   }
   if (!password || password.length < 6) {
@@ -65,6 +66,7 @@ async function submitForm(
 
 const NativeActionForm = () => {
   const formRef = useRef<HTMLFormElement>(null);
+  const [showMessage, setShowMessage] = useState(true);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     submitForm,
@@ -73,6 +75,8 @@ const NativeActionForm = () => {
 
   const handleReset = () => {
     formRef.current?.reset();
+    setShowMessage(false);
+    setTimeout(() => setShowMessage(true), 0);
   };
 
   return (
@@ -92,6 +96,8 @@ const NativeActionForm = () => {
             name="username"
             type="text"
             placeholder="Enter your username"
+            aria-invalid={!!state.errors?.username}
+            aria-describedby={state.errors?.username ? "username-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               state.errors?.username
                 ? "border-2 border-red-500"
@@ -99,7 +105,7 @@ const NativeActionForm = () => {
             }`}
           />
           {state.errors?.username && (
-            <div className="text-red-500 text-sm mt-1">
+            <div id="username-error" className="text-red-500 text-sm mt-1" role="alert">
               {state.errors.username}
             </div>
           )}
@@ -114,6 +120,8 @@ const NativeActionForm = () => {
             name="email"
             type="email"
             placeholder="example@email.com"
+            aria-invalid={!!state.errors?.email}
+            aria-describedby={state.errors?.email ? "email-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               state.errors?.email
                 ? "border-2 border-red-500"
@@ -121,7 +129,7 @@ const NativeActionForm = () => {
             }`}
           />
           {state.errors?.email && (
-            <div className="text-red-500 text-sm mt-1">
+            <div id="email-error" className="text-red-500 text-sm mt-1" role="alert">
               {state.errors.email}
             </div>
           )}
@@ -136,6 +144,8 @@ const NativeActionForm = () => {
             name="password"
             type="password"
             placeholder="Enter your password"
+            aria-invalid={!!state.errors?.password}
+            aria-describedby={state.errors?.password ? "password-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               state.errors?.password
                 ? "border-2 border-red-500"
@@ -143,19 +153,21 @@ const NativeActionForm = () => {
             }`}
           />
           {state.errors?.password && (
-            <div className="text-red-500 text-sm mt-1">
+            <div id="password-error" className="text-red-500 text-sm mt-1" role="alert">
               {state.errors.password}
             </div>
           )}
         </div>
 
-        {state.message && (
+        {state.message && showMessage && (
           <div
             className={`p-3 mb-5 rounded-md ${
               state.success
                 ? "bg-green-50 border border-green-200 text-green-600"
                 : "bg-red-50 border border-red-200 text-red-600"
             }`}
+            role="alert"
+            aria-live="polite"
           >
             {state.message}
             {state.userId && ` (User ID: ${state.userId})`}

@@ -4,6 +4,7 @@ type FormErrors = {
   username?: string;
   email?: string;
   password?: string;
+  general?: string;
 };
 
 const TraditionalControlledForm = () => {
@@ -20,7 +21,8 @@ const TraditionalControlledForm = () => {
     if (!username || username.length < 3) {
       newErrors.username = "Username must be at least 3 characters";
     }
-    if (!email || !email.includes("@")) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
       newErrors.email = "Please enter a valid email";
     }
     if (!password || password.length < 6) {
@@ -62,7 +64,7 @@ const TraditionalControlledForm = () => {
       }
     } catch (error) {
       console.error("❌ Error:", error);
-      setErrors({ username: "Failed to submit. Please try again." });
+      setErrors({ general: "Failed to submit. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -97,6 +99,8 @@ const TraditionalControlledForm = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Enter your username"
+            aria-invalid={!!errors.username}
+            aria-describedby={errors.username ? "username-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               errors.username
                 ? "border-2 border-red-500"
@@ -104,7 +108,7 @@ const TraditionalControlledForm = () => {
             }`}
           />
           {errors.username && (
-            <div className="text-red-500 text-sm mt-1">{errors.username}</div>
+            <div id="username-error" className="text-red-500 text-sm mt-1" role="alert">{errors.username}</div>
           )}
         </div>
 
@@ -119,6 +123,8 @@ const TraditionalControlledForm = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="example@email.com"
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "email-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               errors.email
                 ? "border-2 border-red-500"
@@ -126,7 +132,7 @@ const TraditionalControlledForm = () => {
             }`}
           />
           {errors.email && (
-            <div className="text-red-500 text-sm mt-1">{errors.email}</div>
+            <div id="email-error" className="text-red-500 text-sm mt-1" role="alert">{errors.email}</div>
           )}
         </div>
 
@@ -141,6 +147,8 @@ const TraditionalControlledForm = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "password-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               errors.password
                 ? "border-2 border-red-500"
@@ -148,12 +156,18 @@ const TraditionalControlledForm = () => {
             }`}
           />
           {errors.password && (
-            <div className="text-red-500 text-sm mt-1">{errors.password}</div>
+            <div id="password-error" className="text-red-500 text-sm mt-1" role="alert">{errors.password}</div>
           )}
         </div>
 
+        {errors.general && (
+          <div className="p-3 mb-5 bg-red-50 border border-red-200 rounded-md text-red-600" role="alert" aria-live="polite">
+            {errors.general}
+          </div>
+        )}
+
         {successMessage && (
-          <div className="p-3 mb-5 bg-green-50 border border-green-200 rounded-md text-green-600">
+          <div className="p-3 mb-5 bg-green-50 border border-green-200 rounded-md text-green-600" role="alert" aria-live="polite">
             {successMessage}
           </div>
         )}

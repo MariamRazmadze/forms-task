@@ -16,6 +16,7 @@ type FormData = z.infer<typeof formSchema>;
 
 const ReactHookFormZod = () => {
   const [successMessage, setSuccessMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -30,6 +31,7 @@ const ReactHookFormZod = () => {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     setSuccessMessage("");
+    setIsSuccess(false);
 
     try {
       const response = await fetch("https://dummyjson.com/users/add", {
@@ -43,6 +45,7 @@ const ReactHookFormZod = () => {
       if (response.ok) {
         console.log("🎉 API Response:", result);
         setSuccessMessage(`User created successfully! (User ID: ${result.id})`);
+        setIsSuccess(true);
         reset();
       } else {
         throw new Error("API request failed");
@@ -50,6 +53,7 @@ const ReactHookFormZod = () => {
     } catch (error) {
       console.error("❌ Error:", error);
       setSuccessMessage("Failed to submit. Please try again.");
+      setIsSuccess(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -73,6 +77,8 @@ const ReactHookFormZod = () => {
             type="text"
             placeholder="Enter your username"
             {...register("username")}
+            aria-invalid={!!errors.username}
+            aria-describedby={errors.username ? "username-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               errors.username
                 ? "border-2 border-red-500"
@@ -80,7 +86,7 @@ const ReactHookFormZod = () => {
             }`}
           />
           {errors.username && (
-            <div className="text-red-500 text-sm mt-1">
+            <div id="username-error" className="text-red-500 text-sm mt-1" role="alert">
               {errors.username.message}
             </div>
           )}
@@ -95,6 +101,8 @@ const ReactHookFormZod = () => {
             type="email"
             placeholder="example@email.com"
             {...register("email")}
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "email-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               errors.email
                 ? "border-2 border-red-500"
@@ -102,7 +110,7 @@ const ReactHookFormZod = () => {
             }`}
           />
           {errors.email && (
-            <div className="text-red-500 text-sm mt-1">
+            <div id="email-error" className="text-red-500 text-sm mt-1" role="alert">
               {errors.email.message}
             </div>
           )}
@@ -117,6 +125,8 @@ const ReactHookFormZod = () => {
             type="password"
             placeholder="Enter your password"
             {...register("password")}
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "password-error" : undefined}
             className={`w-full px-3 py-2 text-base rounded-md ${
               errors.password
                 ? "border-2 border-red-500"
@@ -124,7 +134,7 @@ const ReactHookFormZod = () => {
             }`}
           />
           {errors.password && (
-            <div className="text-red-500 text-sm mt-1">
+            <div id="password-error" className="text-red-500 text-sm mt-1" role="alert">
               {errors.password.message}
             </div>
           )}
@@ -133,10 +143,12 @@ const ReactHookFormZod = () => {
         {successMessage && (
           <div
             className={`p-3 mb-5 rounded-md ${
-              successMessage.includes("successfully")
+              isSuccess
                 ? "bg-green-50 border border-green-200 text-green-600"
                 : "bg-red-50 border border-red-200 text-red-600"
             }`}
+            role="alert"
+            aria-live="polite"
           >
             {successMessage}
           </div>
@@ -156,7 +168,11 @@ const ReactHookFormZod = () => {
           </button>
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={() => {
+              reset();
+              setSuccessMessage("");
+              setIsSuccess(false);
+            }}
             className="px-4 py-2.5 text-base font-medium text-blue-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer"
           >
             Reset

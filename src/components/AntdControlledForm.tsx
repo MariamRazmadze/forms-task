@@ -12,8 +12,10 @@ const AntdControlledForm = () => {
   const onFinish: FormProps<FormValues>["onFinish"] = async (values) => {
     console.log("✅ Form submitted with values:", values);
 
+    let hideLoading: (() => void) | null = null;
+
     try {
-      const hideLoading = message.loading("Submitting to DummyJSON API...", 0);
+      hideLoading = message.loading("Submitting to DummyJSON API...", 0);
 
       const response = await fetch("https://dummyjson.com/users/add", {
         method: "POST",
@@ -26,18 +28,22 @@ const AntdControlledForm = () => {
       });
 
       const data = await response.json();
-      hideLoading();
 
       if (response.ok) {
         console.log("🎉 API Response:", data);
         message.success("User created successfully!");
         message.info(`Created user with ID: ${data.id}`);
+        form.resetFields();
       } else {
         throw new Error("API request failed");
       }
     } catch (error) {
       console.error("❌ Error:", error);
       message.error("Failed to submit. Please try again.");
+    } finally {
+      if (hideLoading) {
+        hideLoading();
+      }
     }
   };
 
